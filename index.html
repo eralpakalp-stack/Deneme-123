@@ -5,27 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sürpriz Teklif</title>
   <style>
+    /* Genel Ayarlar */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: #f5f5f5;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #f9f1f0, #ffe5d9);
       color: #333;
-      scroll-behavior: smooth;
+      overflow-x: hidden;
     }
     .container {
-      max-width: 600px;
+      max-width: 420px; /* iPhone genişliği */
       margin: 0 auto;
-      padding: 50px 20px;
+      padding: 30px 20px;
     }
     h1, h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
+
+    /* Soru Kartları */
     .question {
       background: #fff;
-      padding: 30px;
-      margin: 50px 0;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      padding: 25px;
+      margin: 40px 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       opacity: 0;
       transform: translateY(50px);
       transition: all 0.6s ease;
@@ -39,50 +43,80 @@
       margin-top: 20px;
     }
     .buttons button {
-      background: #333;
+      background: #ff6b6b;
       color: #fff;
       border: none;
-      padding: 12px 25px;
+      padding: 12px 30px;
       margin: 5px;
       font-size: 16px;
+      border-radius: 10px;
       cursor: pointer;
-      border-radius: 5px;
-      transition: background 0.3s;
+      transition: all 0.3s;
     }
     .buttons button:hover {
-      background: #555;
+      background: #ff4757;
     }
     .feedback {
       text-align: center;
       margin-top: 15px;
       font-style: italic;
       color: #d9534f;
+      min-height: 20px;
     }
-    .final-message {
+
+    /* Popup Teklif */
+    .popup {
       display: none;
-      text-align: center;
-      padding: 50px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
     }
-    .final-message img {
-      max-width: 100%;
+    .popup-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 350px;
+      animation: popupShow 0.6s ease;
+    }
+    .popup-content img {
+      width: 100%;
       margin-top: 20px;
-      border-radius: 10px;
+      border-radius: 15px;
+    }
+    @keyframes popupShow {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Başlık ve intro */
+    .intro {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 18px;
+    }
+
+    @media (max-width: 430px) {
+      .container { padding: 20px 15px; }
+      .buttons button { padding: 12px 25px; font-size: 15px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Mini Bilgi Yarışması</h1>
-    <p style="text-align:center;">Cevapla bakalım, sürpriz seni bekliyor!</p>
+    <p class="intro">Tüm soruları geçersen, büyük sürpriz seni bekliyor! 😏</p>
 
+    <!-- Sorular -->
     <div class="question" id="q1">
       <h2>Soru 1: Çay mı kahve mi?</h2>
       <div class="buttons">
-        <button onclick="answer(1, true)">Evet</button>
-        <button onclick="answer(1, false)">Hayır</button>
+        <button onclick="answer(1,true)">Evet</button>
+        <button onclick="answer(1,false)">Hayır</button>
       </div>
       <div class="feedback" id="f1"></div>
     </div>
@@ -90,8 +124,8 @@
     <div class="question" id="q2">
       <h2>Soru 2: Pizza favorin mi?</h2>
       <div class="buttons">
-        <button onclick="answer(2, true)">Evet</button>
-        <button onclick="answer(2, false)">Hayır</button>
+        <button onclick="answer(2,true)">Evet</button>
+        <button onclick="answer(2,false)">Hayır</button>
       </div>
       <div class="feedback" id="f2"></div>
     </div>
@@ -99,8 +133,8 @@
     <div class="question" id="q3">
       <h2>Soru 3: Filmleri yüksek sesle izler misin?</h2>
       <div class="buttons">
-        <button onclick="answer(3, true)">Evet</button>
-        <button onclick="answer(3, false)">Hayır</button>
+        <button onclick="answer(3,true)">Evet</button>
+        <button onclick="answer(3,false)">Hayır</button>
       </div>
       <div class="feedback" id="f3"></div>
     </div>
@@ -108,50 +142,59 @@
     <div class="question" id="q4">
       <h2>Soru 4: Son soru! Hazır mısın?</h2>
       <div class="buttons">
-        <button onclick="answer(4, true)">Evet</button>
-        <button onclick="answer(4, false)">Hayır</button>
+        <button onclick="answer(4,true)">Evet</button>
+        <button onclick="answer(4,false)">Hayır</button>
       </div>
       <div class="feedback" id="f4"></div>
     </div>
+  </div>
 
-    <div class="final-message" id="final">
+  <!-- Popup Teklif -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
       <h2>🎉 Sürpriz Zamanı! 🎉</h2>
       <p style="font-size:1.2em;">Bütün soruları geçtin, artık zamanı geldi… Benimle evlenir misin? 😏</p>
-      <img src="https://via.placeholder.com/400x300.png?text=Sürpriz+Foto" alt="Sürpriz Teklif">
+      <img src="https://via.placeholder.com/350x250.png?text=Sürpriz+Foto" alt="Sürpriz Teklif">
     </div>
   </div>
 
+  <!-- Ses Efekti -->
   <audio id="wrongSound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
 
   <script>
     const questions = [1,2,3,4];
     const correctAnswers = [true,true,true,true]; // Tüm cevaplar Evet
+
     function answer(qNum, userAnswer) {
       const feedback = document.getElementById('f'+qNum);
       const question = document.getElementById('q'+qNum);
+
       if(userAnswer === correctAnswers[qNum-1]) {
         feedback.style.color = 'green';
         feedback.textContent = "Doğru! Devam et… 😎";
+
         setTimeout(() => {
-          question.nextElementSibling.classList.add('visible');
-          question.scrollIntoView({behavior:"smooth"});
+          const nextQ = question.nextElementSibling;
+          if(nextQ && nextQ.classList.contains('question')) {
+            nextQ.classList.add('visible');
+            nextQ.scrollIntoView({behavior:"smooth"});
+          } else {
+            // Sonraki soru yoksa popup göster
+            showPopup();
+          }
         }, 700);
       } else {
         feedback.style.color = '#d9534f';
         feedback.textContent = "Yanlış cevap! 😜 Ama denemeye devam et.";
         document.getElementById('wrongSound').play();
       }
-
-      // Son soru sonrası final mesaj
-      if(qNum === questions.length && userAnswer === correctAnswers[qNum-1]) {
-        setTimeout(() => {
-          document.getElementById('final').style.display = 'block';
-          document.getElementById('final').scrollIntoView({behavior:"smooth"});
-        }, 1000);
-      }
     }
 
-    // İlk soruyu görünür yap
+    function showPopup() {
+      const popup = document.getElementById('popup');
+      popup.style.display = 'flex';
+    }
+
     window.onload = () => {
       document.getElementById('q1').classList.add('visible');
     };
