@@ -94,10 +94,10 @@
       
       <!-- The image element is now ready to receive your public URL -->
       <img id="proposalImage" 
-           src="https://placehold.co/400x300/e63946/ffffff?text=Image+Loading..." 
+           src="https://i.imgur.com/AdKobWw.jpeg" 
            alt="The Big Moment" 
            class="rounded-xl mx-auto mb-4 shadow-lg w-full max-w-xs"
-           onerror="this.onerror=null; this.src='https://placehold.co/400x300/555/fff?text=Image+Failed+to+Load%3A+Check+Public+Link';"
+           onerror="this.onerror=null; this.src='https://placehold.co/400x300/555/fff?text=Image+Failed+to+Load';"
       />
       
       <button onclick="window.location.reload()" 
@@ -127,7 +127,7 @@
         questions: [
           // LEVEL 2: GENERAL KNOWLEDGE (MODERATE - Your edited questions)
           { q: "Question 4: What is the common name for the element H₂O?", options: ["Oxygen", "Water", "Carbon Dioxide"], correctIndex: 1 }, 
-          { q: "Question 5: Who is the expected top scorer for Galatasaray in the 2024-2025 season?", options: ["Victor Osimhen", "Lionel Messi", "Pelin Çoban"], correctIndex: 0 }, 
+          { q: "Question 5: Who is the expected top scorer for Galatasaray in the 2025-2026 season?", options: ["Pelin Çoban", "Lionel Messi", "Victor Osimhen"], correctIndex: 2 }, 
           { q: "Question 6: Which country is the origin of the Olympic Games?", options: ["Italy", "Greece", "China"], correctIndex: 1 }
         ]
       },
@@ -229,8 +229,7 @@
         popupTitle.textContent = "💍 THE BIGGEST QUESTION! ❤️";
         popupText.textContent = "You successfully completed the challenge of a lifetime! Are you ready to start our biggest adventure yet? Will you marry me?";
         
-        // <<< IMPORTANT: REPLACE THIS URL WITH YOUR DIRECT PUBLIC IMAGE LINK (.jpg, .png, etc.) >>>
-        // Example: "https://i.imgur.com/myproposalphoto.jpg"
+        // This is the direct image URL provided by the user
         proposalImage.src = "https://i.imgur.com/AdKobWw.jpeg"; 
         
       } else {
@@ -308,5 +307,3 @@
   </script>
 </body>
 </html>
-
-
