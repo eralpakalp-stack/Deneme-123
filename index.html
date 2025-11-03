@@ -3,185 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sürpriz Teklif Quiz</title>
+  <!-- Sürprizi gizlemek için başlık değiştirildi -->
+  <title>Hızlı Bilgi Testi</title> 
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Tailwind CSS'i etkinleştirmek ve özel stilleri eklemek için */
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background: linear-gradient(135deg, #f9f1f0, #ffe5d9);
-      color: #333;
-      overflow-x: hidden;
+      font-family: 'Inter', sans-serif;
+      /* Daha sıcak, daha davetkar bir renk paleti */
+      background-color: #f9f7f3; 
     }
-    .container {
-      max-width: 420px; 
-      margin: 0 auto;
-      padding: 30px 20px;
-    }
-    h1, h2 { text-align: center; margin-bottom: 20px; }
-
-    /* Soru Kartları */
-    .question {
-      background: #fff;
-      border-radius: 20px;
-      padding: 25px;
-      margin: 40px 0;
+    .question-card {
+      /* Sorular için modern, göze hoş gelen bir kart stili */
+      background: #ffffff;
+      border-radius: 1rem; /* Tailwind: rounded-xl */
+      padding: 1.5rem; /* Tailwind: p-6 */
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      opacity: 0;
-      transform: translateY(50px);
       transition: all 0.6s ease;
+      max-width: 400px;
+      margin: 2rem auto;
     }
-    .question.visible { opacity: 1; transform: translateY(0); }
-    .options {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
+    .option-button {
+      background: #a8dadc; /* Açık Mavi */
+      color: #1d3557; /* Koyu Mavi */
+      transition: all 0.2s ease;
+      font-weight: 600;
+      border: 3px solid transparent;
     }
-    .options button {
-      background: #ff6b6b;
+    .option-button:hover:not(:disabled) {
+      background: #457b9d; /* Orta Mavi */
       color: #fff;
-      border: none;
-      padding: 12px;
-      margin: 5px 0;
-      font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
     }
-    .options button:hover { background: #ff4757; }
-    .feedback { text-align: center; margin-top: 15px; font-style: italic; min-height: 20px; color: #d9534f; }
-
-    /* Popup Teklif */
-    .popup {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
+    .option-button:disabled {
+      cursor: default;
+      opacity: 0.8;
     }
+    .correct-feedback { background-color: #4CAF50; color: white; border-color: #4CAF50; } /* Yeşil */
+    .wrong-feedback { background-color: #F44336; color: white; border-color: #F44336; } /* Kırmızı */
+    .next-button {
+        background: #e63946; /* Kırmızı/Sürpriz Rengi */
+        transition: transform 0.1s ease-in-out;
+    }
+    .next-button:hover {
+        background: #c32f38;
+        transform: scale(1.02);
+    }
+    /* Popup Stili */
     .popup-content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      max-width: 350px;
-      animation: popupShow 0.6s ease;
-    }
-    .popup-content img {
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 15px;
+      animation: popupShow 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes popupShow {
       0% { transform: scale(0.5); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    /* Başlık ve intro */
-    .intro { text-align: center; margin-top: 50px; font-size: 18px; }
-
-    @media (max-width: 430px) {
-      .container { padding: 20px 15px; }
-      .options button { font-size: 15px; padding: 12px; }
-    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Mini Bilgi Yarışması</h1>
-    <p class="intro">Tüm soruları geçersen, büyük sürpriz seni bekliyor! 😏</p>
+<body class="min-h-screen flex flex-col justify-center items-center p-4">
 
-    <!-- Sorular -->
-    <div class="question" id="q1">
-      <h2>Soru 1: Türkiye'nin başkenti neresidir?</h2>
-      <div class="options">
-        <button onclick="answer(1,false)">İstanbul</button>
-        <button onclick="answer(1,true)">Ankara</button>
-        <button onclick="answer(1,false)">İzmir</button>
-      </div>
-      <div class="feedback" id="f1"></div>
-    </div>
+  <!-- Ana Başlık ve Skor Alanı -->
+  <div class="text-center mb-8">
+    <h1 id="mainTitle" class="text-3xl md:text-4xl font-extrabold text-[#1d3557] tracking-tight">
+      Eğlenceli Bilgi Testi
+    </h1>
+    <p class="text-lg text-gray-500 mt-2" id="scoreDisplay">Seviye 1: 0 Puan</p>
+  </div>
 
-    <div class="question" id="q2">
-      <h2>Soru 2: Hangi hayvan uçabilir?</h2>
-      <div class="options">
-        <button onclick="answer(2,false)">Aslan</button>
-        <button onclick="answer(2,true)">Kartal</button>
-        <button onclick="answer(2,false)">Fil</button>
-      </div>
-      <div class="feedback" id="f2"></div>
-    </div>
+  <!-- Soru Alanı (Tüm Seviyeler Buraya Yüklenir) -->
+  <div id="quizContainer" class="w-full max-w-lg">
+    <!-- Sorular JS ile dinamik olarak buraya eklenecektir -->
+  </div>
+  
+  <!-- Seviye Geçiş ve Başarı Mesajı -->
+  <div id="levelMessageContainer" class="hidden text-center mt-8">
+    <h2 id="levelMessageTitle" class="text-2xl font-bold text-[#457b9d] mb-4"></h2>
+    <p id="levelMessageText" class="text-gray-600 mb-6 max-w-md mx-auto"></p>
+    <button id="nextLevelButton" onclick="nextLevel()" 
+            class="next-button text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl transition duration-300">
+      Sonraki Seviyeye Geç!
+    </button>
+  </div>
 
-    <div class="question" id="q3">
-      <h2>Soru 3: Hangisi bir sebzedir?</h2>
-      <div class="options">
-        <button onclick="answer(3,false)">Elma</button>
-        <button onclick="answer(3,true)">Havuç</button>
-        <button onclick="answer(3,false)">Muz</button>
-      </div>
-      <div class="feedback" id="f3"></div>
-    </div>
-
-    <div class="question" id="q4">
-      <h2>Soru 4: Son soru! Hazır mısın?</h2>
-      <div class="options">
-        <button onclick="answer(4,true)">Hazırım</button>
-        <button onclick="answer(4,false)">Henüz değilim</button>
-      </div>
-      <div class="feedback" id="f4"></div>
+  <!-- Popup Teklif / Sonuç -->
+  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50 hidden" id="popup">
+    <div class="popup-content bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full">
+      <h2 id="popupTitle" class="text-4xl font-extrabold text-[#e63946] mb-4"></h2>
+      <p id="popupText" class="text-gray-700 text-lg mb-6"></p>
+      <!-- Buraya kişisel bir fotoğraf URL'si ekleyin -->
+      <img id="proposalImage" src="https://placehold.co/400x300/e63946/ffffff?text=O+Büyük+An" alt="Teklif Fotoğrafı" class="rounded-xl mx-auto mb-4">
+      <button onclick="window.location.reload()" 
+              class="bg-gray-400 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition duration-200">
+        Tekrar Başla
+      </button>
     </div>
   </div>
 
-  <!-- Popup Teklif -->
-  <div class="popup" id="popup">
-    <div class="popup-content">
-      <h2>🎉 Sürpriz Zamanı! 🎉</h2>
-      <p style="font-size:1.2em;">Tüm soruları geçtin, artık zamanı geldi… Benimle evlenir misin? 😏</p>
-      <img src="https://via.placeholder.com/350x250.png?text=Sürpriz+Foto" alt="Sürpriz Teklif">
-    </div>
-  </div>
-
-  <!-- Ses Efekti -->
+  <!-- Ses Efekti (Hata) -->
   <audio id="wrongSound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
 
   <script>
-    const questions = [1,2,3,4];
-    const correctAnswers = [1,1,1,0]; // index numarası doğru cevaplar için (0 tabanlı, options sırasına göre)
+    // --- QUIZ DATA ---
+    // Cevap index'i, 0 tabanlıdır.
+    const quizData = {
+      level1: {
+        scoreNeeded: 2, // 3 sorudan en az 2 doğru
+        questions: [
+          { q: "Soru 1: Türkiye'nin başkenti neresidir?", options: ["İstanbul", "İzmir", "Ankara"], correctIndex: 2 },
+          { q: "Soru 2: Dünyanın en büyük okyanusu hangisidir?", options: ["Atlas Okyanusu", "Hint Okyanusu", "Büyük Okyanus"], correctIndex: 2 },
+          { q: "Soru 3: Haftada kaç gün vardır?", options: ["6", "7", "5"], correctIndex: 1 }
+        ]
+      },
+      level2: {
+        scoreNeeded: 2, // 3 sorudan en az 2 doğru
+        questions: [
+          // LÜTFEN KENDİ KİŞİSEL SORULARINIZLA DEĞİŞTİRİN
+          { q: "Soru 4: İlk tanıştığımız yerde ne yemiştik?", options: ["Pizza", "Tost", "Sushi"], correctIndex: 1 },
+          { q: "Soru 5: Sence benim en sevdiğim renk nedir?", options: ["Mavi", "Yeşil", "Kırmızı"], correctIndex: 0 },
+          { q: "Soru 6: Beraber izlediğimiz ilk film hangisiydi?", options: ["Aksiyon", "Komedi", "Romantik"], correctIndex: 2 }
+        ]
+      },
+      level3: {
+        scoreNeeded: 1, // 1 sorudan 1 doğru
+        questions: [
+          // TEKLİF SORUSU
+          { q: "Soru 7: Gelecekteki en büyük hayalin nedir? (Teklif sorusu!)", options: ["Dünyayı gezmek", "Yeni bir iş kurmak", "Benimle evlenmek"], correctIndex: 2 }
+        ]
+      }
+    };
 
-    function answer(qNum, isCorrect) {
-      const feedback = document.getElementById('f'+qNum);
-      const question = document.getElementById('q'+qNum);
+    // --- STATE VARIABLES ---
+    let currentLevel = 1;
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let isLocked = false; // Bir soruyu cevapladıktan sonra kilitler
 
-      if(isCorrect) {
-        feedback.style.color = 'green';
-        feedback.textContent = "Doğru! Devam et… 😎";
+    // --- UTILITY FUNCTIONS ---
+    function getLevelData() {
+      return quizData['level' + currentLevel];
+    }
 
-        setTimeout(() => {
-          const nextQ = question.nextElementSibling;
-          if(nextQ && nextQ.classList.contains('question')) {
-            nextQ.classList.add('visible');
-            nextQ.scrollIntoView({behavior:"smooth"});
-          } else {
-            showPopup();
-          }
-        }, 700);
+    // --- RENDERING FUNCTIONS ---
+    function renderQuestion() {
+      const data = getLevelData();
+      const q = data.questions[currentQuestionIndex];
+      const container = document.getElementById('quizContainer');
+
+      // Clear previous content
+      container.innerHTML = '';
+      document.getElementById('levelMessageContainer').classList.add('hidden');
+      isLocked = false;
+
+      const card = document.createElement('div');
+      card.className = 'question-card flex flex-col items-center';
+      card.innerHTML = `
+        <h2 class="text-xl md:text-2xl font-semibold text-center text-[#1d3557] mb-6">
+          ${q.q}
+        </h2>
+        <div class="options w-full space-y-3">
+          ${q.options.map((option, index) => `
+            <button class="option-button w-full py-3 px-4 rounded-xl shadow-md text-base" data-index="${index}" onclick="handleAnswer(this, ${q.correctIndex})">
+              ${option}
+            </button>
+          `).join('')}
+        </div>
+        <div id="feedback" class="feedback text-center mt-4 text-sm font-medium min-h-6"></div>
+      `;
+      container.appendChild(card);
+      updateScoreDisplay();
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById('scoreDisplay').textContent = `Seviye ${currentLevel}: ${score} / ${getLevelData().questions.length} | Hedef: ${getLevelData().scoreNeeded}`;
+    }
+
+    function showLevelMessage(passed) {
+      const container = document.getElementById('levelMessageContainer');
+      const title = document.getElementById('levelMessageTitle');
+      const text = document.getElementById('levelMessageText');
+      const nextButton = document.getElementById('nextLevelButton');
+      
+      container.classList.remove('hidden');
+      document.getElementById('quizContainer').innerHTML = ''; // Hide quiz card
+
+      if (passed) {
+        title.textContent = "🥳 Tebrikler! Seviye Başarılı!";
+        text.textContent = "Başarınla beni gururlandırdın! Seni bir sonraki, daha kişisel soruların olduğu seviyeye davet ediyorum.";
+        nextButton.classList.remove('hidden');
       } else {
-        feedback.style.color = '#d9534f';
-        feedback.textContent = "Yanlış cevap! 😜 Ama denemeye devam et.";
-        document.getElementById('wrongSound').play();
+        title.textContent = "😔 Başaramadın...";
+        text.textContent = `Bu seviyeyi geçmek için en az ${getLevelData().scoreNeeded} doğru cevap gerekiyordu. Tekrar denemelisin!`;
+        nextButton.classList.add('hidden');
+        
+        // Yeniden başla butonu
+        const restartButton = document.createElement('button');
+        restartButton.textContent = "Yeniden Başla";
+        restartButton.className = "next-button text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl transition duration-300";
+        restartButton.onclick = () => window.location.reload();
+        container.appendChild(restartButton);
       }
     }
 
-    function showPopup() {
+    function showPopup(success) {
       const popup = document.getElementById('popup');
-      popup.style.display = 'flex';
+      const popupTitle = document.getElementById('popupTitle');
+      const popupText = document.getElementById('popupText');
+
+      if (success) {
+        popupTitle.textContent = "💍 EN BÜYÜK SÜRPRİZ! EVLEN BENİMLE! ❤️";
+        popupText.textContent = "Hayatımın quiz'ini başarıyla tamamladın! Bu büyük hayali gerçekleştirmeye hazır mısın? Sonsuza dek benim misin?";
+        document.getElementById('proposalImage').src = "https://placehold.co/400x300/a8dadc/1d3557?text=Geleceğimiz+Birlikte!";
+      } else {
+        // Bu, seviye 3'te başarısız olursa görünür (teorik olarak olmamalı)
+        popupTitle.textContent = "Test Tamamlandı";
+        popupText.textContent = "Testi bitirdin. Lütfen sonucu görmek için tekrar dene!";
+      }
+      popup.classList.remove('hidden');
     }
 
-    window.onload = () => {
-      document.getElementById('q1').classList.add('visible');
-    };
+    // --- EVENT HANDLERS ---
+    function handleAnswer(button, correctIndex) {
+      if (isLocked) return;
+      isLocked = true; // Kilitlendi
+      
+      const buttons = button.parentNode.querySelectorAll('button');
+      const feedback = document.getElementById('feedback');
+      const selectedIndex = parseInt(button.getAttribute('data-index'));
+
+      // Tüm butonları devre dışı bırak
+      buttons.forEach(btn => btn.disabled = true);
+      
+      // Seçilen butonu işaretle
+      button.classList.add('scale-105', 'shadow-xl');
+
+      if (selectedIndex === correctIndex) {
+        score++;
+        button.classList.remove('option-button');
+        button.classList.add('correct-feedback');
+        feedback.textContent = "Mükemmel! Bir puan daha kazandın! 👍";
+      } else {
+        document.getElementById('wrongSound').play();
+        button.classList.remove('option-button');
+        button.classList.add('wrong-feedback');
+        feedback.textContent = "Ah, yanlış cevap. Doğru cevap: " + buttons[correctIndex].textContent;
+        
+        // Doğru cevabı da işaretle
+        buttons[correctIndex].classList.add('correct-feedback');
+      }
+
+      // Skor güncellemeyi göster
+      updateScoreDisplay();
+
+      // Bir sonraki soruya veya seviyeye geçişi kontrol et
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < getLevelData().questions.length) {
+          renderQuestion(); // Aynı seviyede sonraki soru
+        } else {
+          checkLevelCompletion(); // Seviye sonu
+        }
+      }, 1500);
+    }
+
+    function checkLevelCompletion() {
+      const data = getLevelData();
+      const passed = score >= data.scoreNeeded;
+
+      if (currentLevel === 3) {
+        // En son seviyede teklif pop-up'ını göster
+        showPopup(passed);
+      } else {
+        // Ara seviyelerde geçiş mesajını göster
+        showLevelMessage(passed);
+      }
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      currentQuestionIndex = 0;
+      score = 0; // Her seviyede puan sıfırlanır
+      document.getElementById('levelMessageContainer').classList.add('hidden');
+      renderQuestion();
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = renderQuestion; // Sayfa yüklendiğinde Level 1'i başlat
   </script>
 </body>
 </html>
