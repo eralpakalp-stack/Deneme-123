@@ -91,8 +91,15 @@
     <div class="popup-content bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full">
       <h2 id="popupTitle" class="text-4xl font-extrabold text-[#e63946] mb-4"></h2>
       <p id="popupText" class="text-gray-700 text-lg mb-6"></p>
-      <!-- ADD YOUR PERSONAL PHOTO URL HERE -->
-      <img id="proposalImage" src="https://imgur.com/a/BmeAGbH" alt="Proposal Photo" class="rounded-xl mx-auto mb-4 shadow-lg">
+      
+      <!-- The image element is now ready to receive your public URL -->
+      <img id="proposalImage" 
+           src="https://placehold.co/400x300/e63946/ffffff?text=Image+Loading..." 
+           alt="The Big Moment" 
+           class="rounded-xl mx-auto mb-4 shadow-lg w-full max-w-xs"
+           onerror="this.onerror=null; this.src='https://placehold.co/400x300/555/fff?text=Image+Failed+to+Load%3A+Check+Public+Link';"
+      />
+      
       <button onclick="window.location.reload()" 
               class="bg-gray-400 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition duration-200">
         Start Over
@@ -215,13 +222,17 @@
       const popup = document.getElementById('popup');
       const popupTitle = document.getElementById('popupTitle');
       const popupText = document.getElementById('popupText');
+      const proposalImage = document.getElementById('proposalImage');
 
       if (success) {
         // THE GRAND PROPOSAL!
         popupTitle.textContent = "💍 THE BIGGEST QUESTION! ❤️";
         popupText.textContent = "You successfully completed the challenge of a lifetime! Are you ready to start our biggest adventure yet? Will you marry me?";
-        // NOTE: Please replace the placeholder image URL below with your actual proposal photo URL!
-        document.getElementById('proposalImage').src = "https://placehold.co/400x300/e63946/ffffff?text=SAY+YES%21"; 
+        
+        // <<< IMPORTANT: REPLACE THIS URL WITH YOUR DIRECT PUBLIC IMAGE LINK (.jpg, .png, etc.) >>>
+        // Example: "https://i.imgur.com/myproposalphoto.jpg"
+        proposalImage.src = "YOUR_DIRECT_PUBLIC_IMAGE_URL_HERE"; 
+        
       } else {
         // Fail state for Level 3
         popupTitle.textContent = "Challenge Completed";
