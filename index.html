@@ -1,57 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Title is generic to hide the surprise -->
-  <title>Quick Knowledge Test</title> 
+  <title>Büyük An! Sonsuzluğun Başlangıcı</title> 
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
   <style>
-    /* Custom styles for aesthetic appeal */
+    /* Estetik ve animasyon için özel stiller */
     * { box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f9f7f3; 
     }
-    .question-card {
-      background: #ffffff;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      transition: all 0.6s ease;
-      max-width: 400px;
-      margin: 2rem auto;
-      border: 1px solid #f0f0f0;
-    }
-    .option-button {
-      background: #a8dadc; /* Light Cyan */
-      color: #1d3557; /* Dark Blue */
-      transition: all 0.2s ease;
-      font-weight: 600;
-      border: 3px solid transparent;
-    }
-    .option-button:hover:not(:disabled) {
-      background: #457b9d; /* Medium Blue */
-      color: #fff;
-    }
-    .option-button:disabled {
-      cursor: default;
-      opacity: 0.8;
-      box-shadow: none;
-    }
-    /* Feedback colors */
-    .correct-feedback { background-color: #4CAF50; color: white; border-color: #4CAF50; } /* Green */
-    .wrong-feedback { background-color: #F44336; color: white; border-color: #F44336; } /* Red */
-    
-    .next-button {
-        background: #e63946; /* Surprise Red */
-        transition: transform 0.1s ease-in-out;
-    }
-    .next-button:hover {
-        background: #c32f38;
-        transform: scale(1.02);
-    }
-    /* Popup Animation */
     .popup-content {
       animation: popupShow 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -59,251 +21,730 @@
       0% { transform: scale(0.5); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
+
+    /* Ana pop-up container'ı: Mobil cihazlarda daha az kenar boşluğu bırakır */
+    #popup > div {
+        margin: 1rem; 
+        width: 95%; 
+        max-width: 550px; 
+        padding: 1.5rem; 
+    }
+    @media (min-width: 768px) {
+        #popup > div {
+            padding: 2rem; 
+        }
+    }
+
+    /* Yeni Mesaj Stili (Boşluk azaltıldı) */
+    #preProposalMessage {
+        font-weight: 800;
+        font-size: 1.5rem; 
+        color: #1d3557; 
+        min-height: 4rem; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1rem;
+    }
+    @media (max-width: 600px) {
+        #preProposalMessage {
+            font-size: 1.2rem; 
+        }
+    }
+    
+    /* Ana Teklif Metni Büyütüldü ve METALİK GÜMÜŞ GRİ */
+    #finalProposalTextAnimated {
+        font-size: 5rem; 
+        font-weight: 900; 
+        text-transform: uppercase;
+        
+        color: #888888; 
+        text-shadow: 
+            0 0 5px rgba(255,255,255,0.9), 
+            0 0 10px rgba(136,136,136,0.5), 
+            0 0 15px rgba(136,136,136,0.3); 
+        background: linear-gradient(180deg, #eeeeee 0%, #aaaaaa 50%, #666666 100%); 
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-fill-color: transparent;
+        
+        margin-bottom: 2rem;
+        line-height: 1; 
+        text-align: center;
+        white-space: pre-wrap; 
+        font-family: 'Inter', sans-serif; 
+    }
+    @media (max-width: 600px) {
+        #finalProposalTextAnimated {
+            font-size: 3rem; 
+        }
+    }
+
+    /* Yüzük emojisi için yeni stil */
+    #ringEmoji {
+        font-size: 3rem; 
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        margin-top: 1rem; 
+        color: #FFD700; 
+    }
+
+    /* Resim başlangıçta gizli */
+    #proposalImageContainer {
+        opacity: 0;
+        transition: opacity 1s ease;
+    }
+
+    /* Yeni "Devam Et" butonu stili */
+    #continueButton {
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        transition: background-color 0.3s, transform 0.1s;
+        margin-top: 1.5rem;
+        box-shadow: 0 6px 15px rgba(230, 57, 70, 0.4);
+    }
+    /* Aktif (Kırmızı) Stil */
+    #continueButton:not([disabled]) {
+        background-color: #e63946; 
+        color: white;
+    }
+    #continueButton:not([disabled]):hover {
+        background-color: #cc2c38;
+        transform: translateY(-2px);
+    }
+    /* Devre Dışı (Gri) Stil */
+    #continueButton[disabled] {
+        background-color: #ccc; 
+        color: #666;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-center items-center p-4">
 
-  <!-- Main Title and Score Area -->
-  <div class="text-center mb-8">
-    <h1 id="mainTitle" class="text-3xl md:text-4xl font-extrabold text-[#1d3557] tracking-tight">
-      A Fun Knowledge Challenge
-    </h1>
-    <p class="text-lg text-gray-500 mt-2" id="scoreDisplay">Level 1: 0 Points</p>
-  </div>
-
-  <!-- Quiz Area (Questions will be dynamically loaded here) -->
-  <div id="quizContainer" class="w-full max-w-lg">
-    <!-- Questions dynamically added here -->
-  </div>
-  
-  <!-- Level Transition and Success Message -->
-  <div id="levelMessageContainer" class="hidden text-center mt-8 p-6 question-card">
-    <h2 id="levelMessageTitle" class="text-2xl font-bold text-[#457b9d] mb-4"></h2>
-    <p id="levelMessageText" class="text-gray-600 mb-6 max-w-md mx-auto"></p>
-    <button id="nextLevelButton" onclick="nextLevel()" 
-            class="next-button text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl transition duration-300">
-      Proceed to Next Level!
-    </button>
-  </div>
-
-  <!-- Proposal Popup / Final Result -->
-  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50 hidden" id="popup">
-    <div class="popup-content bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full">
-      <h2 id="popupTitle" class="text-4xl font-extrabold text-[#e63946] mb-4"></h2>
-      <p id="popupText" class="text-gray-700 text-lg mb-6"></p>
-      
-      <!-- The image element is now ready to receive your public URL -->
-      <img id="proposalImage" 
-           src="https://i.imgur.com/AdKobWw.jpeg" 
-           alt="The Big Moment" 
-           class="rounded-xl mx-auto mb-4 shadow-lg w-full max-w-xs"
-           onerror="this.onerror=null; this.src='https://placehold.co/400x300/555/fff?text=Image+Failed+to+Load';"
-      />
-      
-      <button onclick="window.location.reload()" 
-              class="bg-gray-400 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition duration-200">
-        Start Over
-      </button>
+    <div class="container mx-auto max-w-sm mt-20 p-6 bg-white rounded-xl shadow-2xl z-30 flex flex-col items-center" id="nameInputScreen">
+        <h1 class="text-3xl font-extrabold text-[#1d3557] mb-6 text-center">Lütfen yarışmacının ismini girin:</h1>
+        <input type="text" id="partnerNameInput" class="w-full p-3 mb-6 border-2 border-[#457b9d] rounded-lg text-center text-xl font-bold" placeholder="Örn: Şakir">
+        <button onclick="setNameAndShowLanguage()" id="nameSubmitButton" class="w-full bg-[#e63946] text-white p-3 rounded-lg font-bold hover:bg-[#cc2c38] transition duration-300" disabled>
+            Devam Et
+        </button>
     </div>
-  </div>
 
-  <!-- Sound Effect (Error) -->
-  <audio id="wrongSound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
-
-  <script>
-    // --- QUIZ DATA: FINALIZED QUESTIONS ---
-    const quizData = {
-      level1: {
-        scoreNeeded: 2, // Needs at least 2 correct answers out of 3
-        questions: [
-          // LEVEL 1: GENERAL KNOWLEDGE (EASY)
-          { q: "Question 1: What is the largest planet in our solar system?", options: ["Mars", "Jupiter", "Venus"], correctIndex: 1 },
-          { q: "Question 2: How many days are in the year 2025?", options: ["365", "367", "366"], correctIndex: 0 }, 
-          { q: "Question 3: Which colour is made by mixing blue and yellow?", options: ["Red", "Green", "Purple"], correctIndex: 1 }
-        ]
-      },
-      level2: {
-        scoreNeeded: 2, // Needs at least 2 correct answers out of 3
-        questions: [
-          // LEVEL 2: GENERAL KNOWLEDGE (MODERATE - Your edited questions)
-          { q: "Question 4: What is the common name for the element H₂O?", options: ["Oxygen", "Water", "Carbon Dioxide"], correctIndex: 1 }, 
-          { q: "Question 5: Who is the expected top scorer for Galatasaray in the 2025-2026 season?", options: ["Pelin Çoban", "Lionel Messi", "Victor Osimhen"], correctIndex: 2 }, 
-          { q: "Question 6: Which country is the origin of the Olympic Games?", options: ["Italy", "Greece", "China"], correctIndex: 1 }
-        ]
-      },
-      level3: {
-        scoreNeeded: 1, // Final question requires 1 correct answer (1/1)
-        questions: [
-          // LEVEL 3: THE PROPOSAL QUESTION (Your final choice)
-          { q: "Question 7: What’s the one dream I never want to wake up from?", options: ["A beach holiday", "A perfect job", "A life with you"], correctIndex: 2 }
-        ]
-      }
-    };
-
-    // --- STATE VARIABLES ---
-    let currentLevel = 1;
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let isLocked = false; 
-
-    // --- UTILITY FUNCTIONS ---
-    function getLevelData() {
-      return quizData['level' + currentLevel];
-    }
-
-    // --- RENDERING FUNCTIONS ---
-    function renderQuestion() {
-      const data = getLevelData();
-      const q = data.questions[currentQuestionIndex];
-      const container = document.getElementById('quizContainer');
-
-      // Clear previous content and hide level message
-      container.innerHTML = '';
-      document.getElementById('levelMessageContainer').classList.add('hidden');
-      isLocked = false; 
-
-      const card = document.createElement('div');
-      card.className = 'question-card flex flex-col items-center';
-      card.innerHTML = `
-        <h2 class="text-xl md:text-2xl font-semibold text-center text-[#1d3557] mb-6">
-          ${q.q}
-        </h2>
-        <div class="options w-full space-y-3">
-          ${q.options.map((option, index) => `
-            <button class="option-button w-full py-3 px-4 rounded-xl shadow-md text-base" data-index="${index}" onclick="handleAnswer(this, ${q.correctIndex})">
-              ${option}
+    <div class="container mx-auto max-w-sm mt-20 p-6 bg-white rounded-xl shadow-2xl z-20 flex flex-col items-center hidden" id="languageSelection">
+        <h1 class="text-3xl font-extrabold text-[#1d3557] mb-6 text-center" id="languageScreenTitle">Lütfen bir dil seçin / Please select a language</h1>
+        <div class="flex space-x-4 w-full">
+            <button onclick="setLanguageAndStartQuiz('TR')" class="flex-1 bg-[#457b9d] text-white p-3 rounded-lg font-bold hover:bg-[#1d3557] transition duration-300">
+                🇹🇷 Türkçe
             </button>
-          `).join('')}
+            <button onclick="setLanguageAndStartQuiz('EN')" class="flex-1 bg-[#457b9d] text-white p-3 rounded-lg font-bold hover:bg-[#1d3557] transition duration-300">
+                🇬🇧 English
+            </button>
         </div>
-        <div id="feedback" class="feedback text-center mt-4 text-sm font-medium min-h-6"></div>
-      `;
-      container.appendChild(card);
-      updateScoreDisplay();
-    }
+    </div>
 
-    function updateScoreDisplay() {
-      const data = getLevelData();
-      document.getElementById('scoreDisplay').textContent = 
-        `Level ${currentLevel} | Score: ${score} / ${data.questions.length} | Goal: ${data.scoreNeeded} Correct`;
-    }
 
-    function showLevelMessage(passed) {
-      const container = document.getElementById('levelMessageContainer');
-      const title = document.getElementById('levelMessageTitle');
-      const text = document.getElementById('levelMessageText');
-      const nextButton = document.getElementById('nextLevelButton');
-      
-      container.classList.remove('hidden');
-      document.getElementById('quizContainer').innerHTML = '';
-
-      if (passed) {
-        title.textContent = "🥳 Congratulations! Level Complete!";
-        text.textContent = "You passed with flying colours! Access granted to the next challenge!";
-        nextButton.classList.remove('hidden');
-      } else {
-        title.textContent = "😔 Access Denied...";
-        text.textContent = `You needed at least ${getLevelData().scoreNeeded} correct answers to proceed. You must restart the quiz to see the surprise!`;
-        nextButton.classList.add('hidden');
+    <div class="container mx-auto max-w-2xl mt-12 mb-20 p-6 bg-white rounded-xl shadow-2xl z-10 hidden" id="quizArea">
+        <h1 class="text-3xl font-extrabold text-[#1d3557] mb-6 text-center border-b pb-3" id="quizTitle"></h1>
         
-        // Add Restart Button
-        let restartButton = document.getElementById('restartButton');
-        if (!restartButton) {
-            restartButton = document.createElement('button');
-            restartButton.id = 'restartButton';
-            restartButton.className = "next-button text-white font-bold py-3 px-8 rounded-full shadow-lg text-xl transition duration-300 mt-4";
-            restartButton.onclick = () => window.location.reload();
-            container.appendChild(restartButton);
+        <div id="quizHeader" class="flex justify-between items-center mb-6 text-lg font-semibold text-gray-600">
+            <span id="scoreDisplay"></span>
+            <span id="questionCounter"></span>
+        </div>
+
+        <div id="quizContainer" class="min-h-[200px] flex flex-col justify-between">
+            
+            <p id="questionText" class="text-2xl font-bold text-[#e63946] mb-8 text-center"></p>
+
+            <div id="optionsContainer" class="grid grid-cols-1 gap-4">
+                </div>
+
+            <p id="feedback" class="text-center mt-4 font-bold text-xl min-h-[1.5rem]"></p>
+        </div>
+
+        <div class="flex justify-center mt-8">
+            <button id="nextButton" onclick="nextQuestion()" class="hidden bg-[#457b9d] text-white p-3 rounded-lg font-bold w-full max-w-xs hover:bg-[#1d3557] transition duration-300">
+                
+            </button>
+        </div>
+
+        <div class="flex justify-center mt-8">
+            <button id="nextLevelButton" onclick="startLevel(2)" class="hidden bg-[#2a9d8f] text-white p-4 rounded-lg font-extrabold text-2xl w-full max-w-xs hover:bg-[#1e7e34] transition duration-300 shadow-lg">
+                
+            </button>
+            <button id="surpriseButton" onclick="showProposalScene()" class="hidden bg-[#e63946] text-white p-4 rounded-lg font-extrabold text-2xl w-full max-w-xs hover:bg-[#cc2c38] transition duration-300 shadow-lg">
+                
+            </button>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center p-4 z-50 hidden" id="popup">
+        <div class="popup-content bg-white rounded-2xl shadow-2xl text-center max-w-lg w-full flex flex-col items-center overflow-y-auto max-h-[95vh]"> 
+        
+        
+
+<h2 id="popupTitle" class="text-4xl font-extrabold text-[#e63946] mb-4"></h2>
+        <p id="popupText" class="text-gray-700 text-lg mb-6 hidden"> </p> 
+        
+        
+
+<div id="preProposalMessage" class="popup-content text-[#1d3557] mb-6">
+            </div>
+        
+        
+
+<div id="spotifyMusicArea" class="w-full mt-4 mb-8 border-y py-4 hidden">
+            <p id="musicNote" class="text-sm font-semibold text-[#1d3557] mb-2 text-center">
+                </p>
+            </div>
+
+        
+
+<div id="continueControl" class="flex flex-col items-center">
+            <button id="continueButton" class="hidden" onclick="transitionToFinalScene()" disabled>
+                </button>
+        </div>
+
+        
+
+<div id="proposalContent" class="hidden w-full">
+            
+            
+
+<h2 id="finalProposalTitle" class="text-4xl font-extrabold text-[#e63946] mb-2"></h2>
+            <p id="finalProposalTextAnimated" class="text-gray-700 text-lg mb-6"></p>
+            <div id="ringEmoji" class="text-4xl">💍</div> 
+
+            
+
+<div id="proposalImageContainer" class="relative w-full max-w-sm md:max-w-md mx-auto shadow-xl rounded-xl mt-4"> 
+                
+                
+
+<img id="proposalImage" 
+                    src="https://i.imgur.com/AdKobWw.jpeg" 
+                    alt="The Big Moment" 
+                    class="w-full h-auto rounded-xl"
+                    onerror="this.onerror=null; this.src='https://placehold.co/400x300/555/fff?text=Image+Failed+to+Load';"
+                />
+                
+                
+            </div>
+
+        </div>
+        
+        </div>
+    </div>
+    
+    <script>
+        // --- CORE CONFIGURATION ---
+        let currentLang = 'TR'; // Varsayılan Dil
+        
+        // Sabit Kullanıcı Verileri
+        let PARTNER_NAME = ""; // ARTIK DİNAMİK OLARAK ALINACAK
+        const USER_NAME = "Eralp"; 
+        
+        // --- SPOTIFY CONFIGURATION ---
+        const SPOTIFY_TRACK_ID = "1SKPmfSYaPsETbRHaiA18G"; 
+        const MUSIC_PLAYER_URL = `https://open.spotify.com/embed/track/${SPOTIFY_TRACK_ID}?utm_source=generator&autoplay=0&start=5`; 
+        const MUSIC_PLAYER_HEIGHT = "352"; 
+
+        const TYPING_SPEED_MS = 1000; 
+        const INITIAL_TEXT_DELAY_MS = 2000;
+
+
+        /**
+         * DİNAMİK METİN FONKSİYONU
+         * PARTNER_NAME ayarlandıktan sonra mesajları bu fonksiyon oluşturur.
+         */
+        function getMessages(lang, partnerName, userName) {
+            const messages = {
+                TR: {
+                    quizTitle: `${partnerName}'nin Özel Kültür Testi!`,
+                    scoreLabel: "Puan:",
+                    levelQCount: (level, current, total) => `Level ${level} | Soru ${current} / ${total}`,
+                    nextButton: "İleri",
+                    surpriseButton: "Sesli Bölüme Hazırım!",
+                    nextLevelButton: "Level 2'ye Geç!",
+                    feedbackCorrect: "DOĞRU! Tebrikler!",
+                    feedbackWrong: "YANLIŞ! Ama yine de bir dahisin.",
+                    resultsTitlePassed: "Level Başarıyla Geçildi!",
+                    resultsTitleFailed: "Level Tamamlandı!",
+                    resultsTextL1Passed: (score, total) => `Harika! ${total} sorudan ${score} doğru yaparak Level 2'ye geçmeye hak kazandın!`,
+                    resultsTextL1Failed: (score, total) => `Üzülme! ${total} sorudan ${score} doğru yaptın. Yine de Level 2'de şansını dene!`,
+                    resultsTextL2Passed: (score, total) => `İnanılmazsın! ${total} sorudan ${score} doğru yaparak büyük sürprizi garantiledin!`,
+                    resultsTextL2Failed: (score, total) => `Canın sağolsun! ${total} sorudan ${score} doğru yaptın. Ancak merak etme, asıl sürpriz seni bekliyor...`,
+                    resultsNextLevel: "Bir sonraki zorluğa hazır ol...",
+                    resultsSurprise: "Şimdi daha zor bir bölüm seni bekliyor...",
+                    popupTitleAlmost: "Sesli Bölüm",
+                    musicNote: "Devam etmek için müziği başlatın",
+                    continueButton: "Devam Et!",
+                    finalProposalTitle: "Final Sorusu",
+                    finalProposalText: "BENİMLE\nEVLENİR\nMİSİN?",
+                    // Sorular ve Seçenekler
+                    q1: "Güneş Sistemimizdeki en büyük gezegen hangisidir?",
+                    optq1: ["Mars", "Jüpiter", "Venüs"],
+                    q2: "2025 yılında kaç gün vardır?",
+                    optq2: ["365", "367", "366"],
+                    q3: "Mavi ve sarı renklerin karışımından hangi renk elde edilir?",
+                    optq3: ["Kırmızı", "Yeşil", "Mor"],
+                    q4: "H₂O elementinin yaygın adı nedir?",
+                    optq4: ["Oksijen", "Su", "Karbondioksit"],
+                    q5: `${partnerName} için Galatasaray'ın en golcü oyuncusu kimdir?`,
+                    optq5: ["Pelin Çoban", "Victor Osimhen", "Lionel Messi"],
+                    q6: "Olimpiyat Oyunlarının kökeni hangi ülkedir?",
+                    optq6: ["İtalya", "Yunanistan", "Çin"],
+                    q7: "Senin için en önemli olan hangisidir?",
+                    optq7: ["Başarılı bir kariyer", "Para ve zenginlik", `${userName} ile bir hayat`],
+                },
+                EN: {
+                    quizTitle: `${partnerName}'s Special Knowledge Quiz!`,
+                    scoreLabel: "Score:",
+                    levelQCount: (level, current, total) => `Level ${level} | Question ${current} / ${total}`,
+                    nextButton: "Next",
+                    surpriseButton: "Surprise Ready!",
+                    nextLevelButton: "Proceed to Level 2!",
+                    feedbackCorrect: "CORRECT! Congratulations!",
+                    feedbackWrong: "WRONG! But keep trying.",
+                    resultsTitlePassed: "Level Completed Successfully!",
+                    resultsTitleFailed: "Level Completed!",
+                    resultsTextL1Passed: (score, total) => `Amazing! You got ${score} out of ${total} questions correct and earned the right to proceed to Level 2!`,
+                    resultsTextL1Failed: (score, total) => `Don't worry! You got ${score} out of ${total} questions correct. You can still try your luck in Level 2!`,
+                    resultsTextL2Passed: (score, total) => `Incredible! You got ${score} out of ${total} questions correct, guaranteeing the big surprise!`,
+                    resultsTextL2Failed: (score, total) => `It's okay! You got ${score} out of ${total} questions correct. But don't worry, the real surprise awaits you...`,
+                    resultsNextLevel: "Get ready for the next challenge...",
+                    resultsSurprise: "I have a big surprise especially for you...",
+                    popupTitleAlmost: "Audio Section",
+                    musicNote: "Start the music to proceed",
+                    continueButton: "Continue!",
+                    finalProposalTitle: "Final Question",
+                    finalProposalText: "WILL YOU\nMARRY\nME?",
+                    // Sorular ve Seçenekler
+                    q1: "What is the largest planet in our solar system?",
+                    optq1: ["Mars", "Jupiter", "Venus"],
+                    q2: "How many days are in the year 2025?",
+                    optq2: ["365", "367", "366"],
+                    q3: "Which colour is made by mixing blue and yellow?",
+                    optq3: ["Red", "Green", "Purple"],
+                    q4: "What is the common name for the element H₂O?",
+                    optq4: ["Oxygen", "Water", "Carbon Dioxide"],
+                    q5: `Who is the top scorer for Galatasaray for ${partnerName}?`,
+                    optq5: ["Pelin Çoban", "Victor Osimhen", "Lionel Messi"],
+                    q6: "Which country is the origin of the Olympic Games?",
+                    optq6: ["Italy", "Greece", "China"],
+                    q7: "Which one is more important for you?",
+                    optq7: ["A successful career", "Money and wealth", `A life with ${userName}`],
+                }
+            };
+            return messages[lang];
         }
-        restartButton.textContent = "Restart Challenge";
-      }
-    }
 
-    function showPopup(success) {
-      const popup = document.getElementById('popup');
-      const popupTitle = document.getElementById('popupTitle');
-      const popupText = document.getElementById('popupText');
-      const proposalImage = document.getElementById('proposalImage');
 
-      if (success) {
-        // THE GRAND PROPOSAL!
-        popupTitle.textContent = "💍 THE BIGGEST QUESTION! ❤️";
-        popupText.textContent = "You successfully completed the challenge of a lifetime! Are you ready to start our biggest adventure yet? Will you marry me?";
+        // --- QUIZ DATA ---
+        const LEVEL_REQUIREMENTS = {
+            1: { requiredScore: 2, nextAction: 'nextLevel' }, 
+            2: { requiredScore: 3, nextAction: 'surprise' }   
+        };
         
-        // This is the direct image URL provided by the user
-        proposalImage.src = "https://i.imgur.com/AdKobWw.jpeg"; 
+        let LEVEL_1_QUESTIONS = []; 
+        let LEVEL_2_QUESTIONS = []; 
+
+        // --- AUDIO SETUP (Ses Efektleri) ---
+        let proposalRevealSynth; 
+        let correctSynth; 
+        let isAudioContextInitialized = false;
         
-      } else {
-        // Fail state for Level 3
-        popupTitle.textContent = "Challenge Completed";
-        popupText.textContent = "You finished the test, but didn't unlock the final surprise. Please try again from the beginning!";
-      }
-      popup.classList.remove('hidden');
-    }
-
-    // --- EVENT HANDLERS ---
-    function handleAnswer(button, correctIndex) {
-      if (isLocked) return; 
-      isLocked = true; 
-      
-      const buttons = button.parentNode.querySelectorAll('button');
-      const feedback = document.getElementById('feedback');
-      const selectedIndex = parseInt(button.getAttribute('data-index'));
-
-      // Disable all buttons
-      buttons.forEach(btn => btn.disabled = true);
-      
-      // Visually mark the selected button
-      button.classList.add('scale-105', 'shadow-xl');
-
-      if (selectedIndex === correctIndex) {
-        score++;
-        button.classList.remove('option-button', 'bg-[#a8dadc]');
-        button.classList.add('correct-feedback');
-        feedback.textContent = "Fantastic! You earned a point! 👍";
-      } else {
-        document.getElementById('wrongSound').play();
-        button.classList.remove('option-button', 'bg-[#a8dadc]');
-        button.classList.add('wrong-feedback');
-        feedback.textContent = "Oops, wrong answer. The correct answer was: " + buttons[correctIndex].textContent;
-        
-        // Highlight the correct answer
-        buttons[correctIndex].classList.add('correct-feedback');
-      }
-
-      updateScoreDisplay();
-
-      // Proceed to next question or check level completion
-      setTimeout(() => {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < getLevelData().questions.length) {
-          renderQuestion();
-        } else {
-          checkLevelCompletion();
+        function initAudioContext() {
+            if (isAudioContextInitialized) return;
+            
+            proposalRevealSynth = new Tone.PolySynth(Tone.Synth, { 
+                oscillator: { type: 'sine' }, 
+                envelope: { attack: 0.1, decay: 0.8, sustain: 0.5, release: 1 } 
+            }).toDestination();
+            
+            correctSynth = new Tone.PolySynth(Tone.Synth, { 
+                oscillator: { type: 'sine' }, 
+                envelope: { attack: 0.05, decay: 0.3, sustain: 0.1, release: 0.5 } 
+            }).toDestination();
+            
+            Tone.start(); 
+            isAudioContextInitialized = true;
         }
-      }, 1500);
-    }
 
-    function checkLevelCompletion() {
-      const data = getLevelData();
-      const passed = score >= data.scoreNeeded;
+        function playProposalRevealSound() {
+            initAudioContext();
+            const now = Tone.now();
+            proposalRevealSynth.triggerAttackRelease("C4", "8n", now);
+            proposalRevealSynth.triggerAttackRelease("G4", "8n", now + 0.2); 
+            proposalRevealSynth.triggerAttackRelease("C5", "4n", now + 0.4);
+            proposalRevealSynth.triggerAttackRelease("E5", "2n", now + 0.8);
+        }
+        
+        function playCorrectSound() {
+            initAudioContext();
+            const now = Tone.now();
+            correctSynth.triggerAttackRelease(["C5", "E5", "G5"], "8n", now);
+        }
 
-      if (currentLevel === 3) {
-        showPopup(passed);
-      } else {
-        showLevelMessage(passed);
-      }
-    }
+        /**
+         * Kelime kelime yazı animasyonu (Typewriter Effect)
+         */
+        function typeWriterEffect(elementId, text, speed) {
+            return new Promise(resolve => {
+                const element = document.getElementById(elementId);
+                // Yeni satır karakterini (\n) ve boşlukları (\s+) ayırıcı olarak kullanır
+                const parts = text.split(/(\s+|\n)/).filter(p => p.length > 0); 
+                let partIndex = 0;
+                element.textContent = ''; 
 
-    function nextLevel() {
-      currentLevel++;
-      currentQuestionIndex = 0;
-      score = 0; // Reset score for the new level
-      document.getElementById('levelMessageContainer').classList.add('hidden');
-      renderQuestion();
-    }
+                function typing() {
+                    if (partIndex < parts.length) {
+                        const currentPart = parts[partIndex];
+                        let currentHtml = element.innerHTML;
+                            
+                        if (currentPart === '\n') {
+                            // Yeni satır karakterini HTML <br> ile değiştir
+                            currentHtml += '<br>'; 
+                        } else if (/\s+/.test(currentPart)) {
+                            // Boşlukları NBSP (bölünemez boşluk) ile ekle
+                            currentHtml += ' '; 
+                        } else {
+                            currentHtml += currentPart; 
+                        }
 
-    // --- INITIALIZATION ---
-    window.onload = renderQuestion;
-  </script>
+                        element.innerHTML = currentHtml;
+                        partIndex++;
+                        
+                        // Kelime bazında hız ayarı
+                        const delay = (currentPart.trim().length > 0) ? speed : 50; 
+                        
+                        setTimeout(typing, delay);
+                    } else {
+                        resolve(); 
+                    }
+                }
+                
+                setTimeout(typing, INITIAL_TEXT_DELAY_MS);
+            });
+        }
+        
+        // --- QUIZ STATE MANAGEMENT ---
+        let currentLevel = 1;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let currentQuestionSet = [];
+
+
+        // --- İSİM GİRİŞ VE DİL SEÇİMİ ---
+
+        /**
+         * İsim giriş alanını dinler ve butonu etkinleştirir.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputElement = document.getElementById('partnerNameInput');
+            const submitButton = document.getElementById('nameSubmitButton');
+
+            inputElement.addEventListener('input', () => {
+                // Girişte boşlukları kaldırarak uzunluğu kontrol et
+                if (inputElement.value.trim().length > 0) {
+                    submitButton.disabled = false;
+                } else {
+                    submitButton.disabled = true;
+                }
+            });
+        });
+
+
+        /**
+         * İsimi alır ve dil seçeneği ekranını gösterir.
+         */
+        function setNameAndShowLanguage() {
+            const inputElement = document.getElementById('partnerNameInput');
+            PARTNER_NAME = inputElement.value.trim();
+
+            if (PARTNER_NAME === "") return;
+
+            // İsim ekranını gizle, dil ekranını göster
+            document.getElementById('nameInputScreen').classList.add('hidden');
+            document.getElementById('languageSelection').classList.remove('hidden');
+
+            // Dil ekranının başlığını kişiselleştir
+            document.getElementById('languageScreenTitle').textContent = `${PARTNER_NAME} için dil seçin / Select language for ${PARTNER_NAME}`;
+        }
+
+
+        /**
+         * Quiz verilerini PARTNER_NAME'e göre günceller.
+         */
+        function updateQuizData(lang) {
+            const M = getMessages(lang, PARTNER_NAME, USER_NAME);
+            
+            LEVEL_1_QUESTIONS = [
+                { question: M.q1, options: M.optq1, correctAnswer: 1 },
+                { question: M.q2, options: M.optq2, correctAnswer: 0 },
+                { question: M.q3, options: M.optq3, correctAnswer: 1 },
+            ];
+
+            LEVEL_2_QUESTIONS = [
+                { question: M.q4, options: M.optq4, correctAnswer: 1 },
+                { question: M.q5, options: M.optq5, correctAnswer: 1 },
+                { question: M.q6, options: M.optq6, correctAnswer: 1 },
+                { question: M.q7, options: M.optq7, correctAnswer: 2 },
+            ];
+        }
+
+        /**
+         * Dili ayarlar ve testi başlatır.
+         */
+        function setLanguageAndStartQuiz(lang) {
+            currentLang = lang;
+            
+            // PARTNER_NAME artık ayarlandığı için mesajları güncelle
+            const M = getMessages(currentLang, PARTNER_NAME, USER_NAME);
+
+            // QUIZ verilerini ve metinleri yükle
+            updateQuizData(currentLang); 
+            document.getElementById('quizTitle').textContent = M.quizTitle;
+            document.getElementById('nextButton').textContent = M.nextButton;
+            document.getElementById('nextLevelButton').textContent = M.nextLevelButton;
+            document.getElementById('surpriseButton').textContent = M.surpriseButton;
+            document.getElementById('popupTitle').textContent = M.popupTitleAlmost; 
+            document.getElementById('musicNote').textContent = M.musicNote;
+            document.getElementById('continueButton').textContent = M.continueButton;
+            document.getElementById('finalProposalTitle').textContent = M.finalProposalTitle;
+
+
+            // Dil seçim ekranını gizle, test alanını göster
+            document.getElementById('languageSelection').classList.add('hidden');
+            document.getElementById('quizArea').classList.remove('hidden');
+
+            // Testi başlat
+            startLevel(1);
+        }
+        
+        
+        // --- QUIZ LOGIC ---
+
+        function startLevel(level) {
+            currentLevel = level;
+            currentQuestionIndex = 0;
+            score = 0;
+
+            currentQuestionSet = (level === 1) ? LEVEL_1_QUESTIONS : LEVEL_2_QUESTIONS;
+            
+            // UI gizleme/gösterme
+            document.getElementById('quizHeader').classList.remove('hidden');
+            document.getElementById('nextLevelButton').classList.add('hidden');
+            document.getElementById('surpriseButton').classList.add('hidden');
+            
+            const quizContainer = document.getElementById('quizContainer');
+            // Container'ı temizle ve yeniden oluştur
+            quizContainer.innerHTML = `
+                <p id="questionText" class="text-2xl font-bold text-[#e63946] mb-8 text-center"></p>
+                <div id="optionsContainer" class="grid grid-cols-1 gap-4"></div>
+                <p id="feedback" class="text-center mt-4 font-bold text-xl min-h-[1.5rem]"></p>
+            `;
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const M = getMessages(currentLang, PARTNER_NAME, USER_NAME);
+            document.getElementById('scoreDisplay').textContent = `${M.scoreLabel} ${score} / ${currentQuestionSet.length}`;
+            
+            if (currentQuestionIndex >= currentQuestionSet.length) {
+                showLevelResults();
+                return;
+            }
+
+            const currentQ = currentQuestionSet[currentQuestionIndex];
+            document.getElementById('questionText').textContent = currentQ.question;
+            document.getElementById('questionCounter').textContent = M.levelQCount(currentLevel, currentQuestionIndex + 1, currentQuestionSet.length);
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('nextButton').classList.add('hidden');
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            currentQ.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                const optionLetter = String.fromCharCode(65 + index); 
+                button.className = 'answer-btn bg-[#457b9d] text-white p-3 rounded-lg font-semibold hover:bg-[#1d3557] transition duration-300';
+                button.dataset.index = index;
+                button.textContent = `${optionLetter}. ${option}`;
+                button.onclick = () => checkAnswer(index, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const currentQ = currentQuestionSet[currentQuestionIndex];
+            const feedbackElement = document.getElementById('feedback');
+            const nextButton = document.getElementById('nextButton');
+            const M = getMessages(currentLang, PARTNER_NAME, USER_NAME);
+            
+            document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === currentQ.correctAnswer) {
+                score++;
+                playCorrectSound(); 
+                feedbackElement.textContent = M.feedbackCorrect;
+                feedbackElement.style.color = '#1d3557';
+                button.style.backgroundColor = '#2a9d8f'; 
+                document.getElementById('scoreDisplay').textContent = `${M.scoreLabel} ${score} / ${currentQuestionSet.length}`;
+            } else {
+                feedbackElement.textContent = M.feedbackWrong;
+                feedbackElement.style.color = '#e63946';
+                button.style.backgroundColor = '#e63946'; 
+
+                document.querySelectorAll('.answer-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.index) === currentQ.correctAnswer) {
+                        btn.style.backgroundColor = '#2a9d8f'; 
+                    }
+                });
+            }
+            
+            nextButton.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showLevelResults() {
+            const M = getMessages(currentLang, PARTNER_NAME, USER_NAME);
+            const required = LEVEL_REQUIREMENTS[currentLevel].requiredScore;
+            const nextAction = LEVEL_REQUIREMENTS[currentLevel].nextAction;
+            const passed = score >= required;
+            const totalQuestions = currentQuestionSet.length;
+            
+            let titleText = '';
+            let messageText = '';
+
+            if (currentLevel === 1) {
+                titleText = passed ? M.resultsTitlePassed : M.resultsTitleFailed;
+                messageText = passed ? M.resultsTextL1Passed(score, totalQuestions) : M.resultsTextL1Failed(score, totalQuestions);
+            } else if (currentLevel === 2) {
+                titleText = passed ? M.resultsTitlePassed : M.resultsTitleFailed;
+                messageText = passed ? M.resultsTextL2Passed(score, totalQuestions) : M.resultsTextL2Failed(score, totalQuestions);
+            }
+            
+            document.getElementById('quizContainer').innerHTML = `
+                <h2 class="text-3xl font-extrabold text-[#e63946] mb-4 text-center">${titleText}</h2>
+                <p class="text-xl text-center text-[#1d3557]">${messageText}</p>
+                <p class="text-xl font-bold text-center text-[#457b9d] mt-4">${nextAction === 'nextLevel' ? M.resultsNextLevel : M.resultsSurprise}</p>
+            `;
+            document.getElementById('quizHeader').classList.add('hidden');
+            document.getElementById('nextButton').classList.add('hidden');
+            
+            if (nextAction === 'nextLevel') {
+                document.getElementById('nextLevelButton').classList.remove('hidden');
+                document.getElementById('nextLevelButton').textContent = M.nextLevelButton;
+            } else if (nextAction === 'surprise') {
+                document.getElementById('surpriseButton').classList.remove('hidden'); 
+            }
+        }
+        
+        // Teklif sahnesine geçiş
+        function showProposalScene() {
+            document.getElementById('quizArea').classList.add('hidden');
+            startFinalScene(); 
+            document.getElementById('popup').classList.remove('hidden');
+        }
+
+
+        // --- PROPOSAL SCENE CONTROL ---
+        
+        function showPreProposalMessage() {
+            const continueButton = document.getElementById('continueButton');
+            const musicPlayerArea = document.getElementById('spotifyMusicArea');
+
+            loadMusicPlayer(musicPlayerArea);
+
+            // Butonu hazırla
+            continueButton.classList.remove('hidden');
+            
+            // 5 saniye sonra butonu etkinleştir
+            continueButton.disabled = true; 
+
+            setTimeout(() => {
+                continueButton.disabled = false;
+            }, 5000); 
+        }
+
+        function loadMusicPlayer(musicPlayerArea) {
+            if (musicPlayerArea.querySelector('iframe')) return; 
+
+            const iframeHTML = `
+                <iframe 
+                    style="border-radius:12px;" 
+                    src="${MUSIC_PLAYER_URL}" 
+                    width="100%" 
+                    height="${MUSIC_PLAYER_HEIGHT}" 
+                    frameBorder="0" 
+                    allowfullscreen 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy">
+                </iframe>
+            `;
+            
+            const musicNote = document.getElementById('musicNote');
+            musicNote.insertAdjacentHTML('afterend', iframeHTML);
+            
+            musicPlayerArea.classList.remove('hidden');
+        }
+
+        async function transitionToFinalScene() {
+            const preProposalMessage = document.getElementById('preProposalMessage');
+            const proposalContent = document.getElementById('proposalContent');
+            const continueControl = document.getElementById('continueControl');
+            const musicPlayerArea = document.getElementById('spotifyMusicArea');
+            const proposalImageContainer = document.getElementById('proposalImageContainer');
+            
+            if (!document.getElementById('continueButton') || document.getElementById('continueButton').disabled) {
+                return;
+            }
+
+            playProposalRevealSound();
+
+            setTimeout(async () => {
+                preProposalMessage.classList.add('hidden');
+                continueControl.classList.add('hidden');
+                musicPlayerArea.classList.add('hidden');
+                
+                document.getElementById('popupTitle').classList.add('hidden'); 
+                document.getElementById('popupText').classList.add('hidden'); 
+                
+                const finalProposalTitle = document.getElementById('finalProposalTitle');
+                finalProposalTitle.classList.remove('hidden');
+                proposalContent.classList.remove('hidden');
+                
+                // PARTNER_NAME'e göre güncellenmiş metni al
+                const M = getMessages(currentLang, PARTNER_NAME, USER_NAME);
+
+                await typeWriterEffect('finalProposalTextAnimated', M.finalProposalText, TYPING_SPEED_MS);
+                
+                const ringEmoji = document.getElementById('ringEmoji');
+                await new Promise(resolve => setTimeout(() => {
+                    ringEmoji.style.opacity = '1';
+                    resolve();
+                }, 1000)); 
+
+                setTimeout(() => {
+                    proposalImageContainer.style.opacity = '1';
+                }, 1000);
+
+            }, 1000); 
+        }
+        
+        function startFinalScene() {
+            showPreProposalMessage(); 
+        }
+        
+    </script>
 </body>
 </html>
